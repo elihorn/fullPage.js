@@ -150,6 +150,7 @@
             touchSensitivity: 5,
             normalScrollElementTouchThreshold: 5,
             bigSectionsDestination: null,
+            autoHeight: true,
 
             //Accessibility
             keyboardScrolling: true,
@@ -168,6 +169,8 @@
             responsiveWidth: 0,
             responsiveHeight: 0,
             responsiveSlides: false,
+            topOffset: 0,
+            bottomOffset: 0,
 
             //Custom selectors
             sectionSelector: SECTION_DEFAULT_SEL,
@@ -192,7 +195,7 @@
         var isTouchDevice = navigator.userAgent.match(/(iPhone|iPod|iPad|Android|playbook|silk|BlackBerry|BB10|Windows Phone|Tizen|Bada|webOS|IEMobile|Opera Mini)/);
         var isTouch = (('ontouchstart' in window) || (navigator.msMaxTouchPoints > 0) || (navigator.maxTouchPoints));
         var container = $(this);
-        var windowsHeight = $window.height();
+        var windowsHeight = $window.height() - options.topOffset - options.bottomOffset;
         var isResizing = false;
         var isWindowFocused = true;
         var lastScrolledDestiny;
@@ -438,8 +441,8 @@
 
             isResizing = true;
 
-            windowsHeight = $window.height();  //updating global var
-
+            windowsHeight = $window.height() - options.topOffset - options.bottomOffset;  //updating global var
+            
             $(SECTION_SEL).each(function(){
                 var slidesWrap = $(this).find(SLIDES_WRAPPER_SEL);
                 var slides = $(this).find(SLIDE_SEL);
@@ -449,7 +452,9 @@
                     $(this).find(TABLE_CELL_SEL).css('height', getTableHeight($(this)) + 'px');
                 }
 
-                $(this).css('height', windowsHeight + 'px');
+                if(options.autoHeight) {
+                  $(this).css('height', windowsHeight + 'px');
+                }
 
                 //resizing the scrolling divs
                 if(options.scrollOverflow){
@@ -649,7 +654,7 @@
             $('html').addClass(ENABLED);
 
             //due to https://github.com/alvarotrigo/fullPage.js/issues/1502
-            windowsHeight = $window.height();
+            windowsHeight = $window.height() - options.topOffset - options.bottomOffset;
 
             container.removeClass(DESTROYED); //in case it was destroyed before initializing it again
 
@@ -743,12 +748,14 @@
         */
         function styleSection(section, index){
             //if no active section is defined, the 1st one will be the default one
+            
             if(!index && $(SECTION_ACTIVE_SEL).length === 0) {
                 section.addClass(ACTIVE);
             }
-
-            section.css('height', windowsHeight + 'px');
-
+            
+            if(options.autoHeight) {
+              section.css('height', windowsHeight + 'px');
+            }
             if(options.paddingTop){
                 section.css('padding-top', options.paddingTop);
             }
@@ -917,13 +924,14 @@
         //when scrolling...
         function scrollHandler(){
             var currentSection;
+            var windowsHeight = $window.height() - options.topOffset - options.bottomOffset;
 
             if(!options.autoScrolling || options.scrollBar){
                 var currentScroll = $window.scrollTop();
                 var scrollDirection = getScrollDirection(currentScroll);
                 var visibleSectionIndex = 0;
-                var screen_mid = currentScroll + ($window.height() / 2.0);
-                var isAtBottom = $body.height() - $window.height() === currentScroll;
+                var screen_mid = currentScroll + (windowsHeight / 2.0) - options.topOffset;
+                var isAtBottom = $body.height() - windowsHeight === currentScroll;
                 var sections =  document.querySelectorAll(SECTION_SEL);
 
                 //when using `auto-height` for a small last section it won't be centered in the viewport
@@ -1027,10 +1035,11 @@
         */
         function isCompletelyInViewPort(movement){
             var top = $(SECTION_ACTIVE_SEL).position().top;
-            var bottom = top + $window.height();
+            var windowsHeight = $window.height() - options.topOffset - options.bottomOffset;
+            var bottom = top + windowsHeight;
 
             if(movement == 'up'){
-                return bottom >= ($window.scrollTop() + $window.height());
+                return bottom >= ($window.scrollTop() + windowsHeight - options.topOffset);
             }
             return top <= $window.scrollTop();
         }
@@ -2955,7 +2964,7 @@
          */
         create: function(element, scrollHeight) {
             var scrollable = element.find(SCROLLABLE_SEL);
-
+            console.log("scrollHeight:", scrollHeight);
             scrollable.height(scrollHeight);
             scrollable.each(function() {
                 var $this = $(this);
@@ -3060,7 +3069,6 @@
                     $(this).get(0).refresh();
                 });
             }, 150);
-
             //updating the wrappers height
             element.find(SCROLLABLE_SEL).css('height', scrollHeight + 'px').parent().css('height', scrollHeight + 'px');
         },

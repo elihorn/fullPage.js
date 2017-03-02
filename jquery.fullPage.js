@@ -2964,7 +2964,6 @@
          */
         create: function(element, scrollHeight) {
             var scrollable = element.find(SCROLLABLE_SEL);
-            console.log("scrollHeight:", scrollHeight);
             scrollable.height(scrollHeight);
             scrollable.each(function() {
                 var $this = $(this);

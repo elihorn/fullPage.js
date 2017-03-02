@@ -933,8 +933,6 @@
                 var screen_mid = currentScroll + (windowsHeight / 2.0) - options.topOffset;
                 var isAtBottom = $body.height() - windowsHeight === currentScroll;
                 var sections =  document.querySelectorAll(SECTION_SEL);
-                
-                console.log(screen_mid);
 
                 //when using `auto-height` for a small last section it won't be centered in the viewport
                 if(isAtBottom){
@@ -2966,7 +2964,6 @@
          */
         create: function(element, scrollHeight) {
             var scrollable = element.find(SCROLLABLE_SEL);
-            console.log("scrollHeight:", scrollHeight);
             scrollable.height(scrollHeight);
             scrollable.each(function() {
                 var $this = $(this);
